@@ -1,7 +1,9 @@
 import logo from './logo.svg';
 import './App.css';
 import {Button} from '@mui/material/';
-import React from 'react';
+import React, {useState} from 'react';
+import authContext from "./authContext";
+//import Login from "./Login";
 
 export const eel = window.eel
 eel.set_host( 'ws://localhost:8080' )
@@ -20,30 +22,39 @@ function show_log(msg) {
 window.eel.expose(show_log, 'show_log')
 
 // Test calling sayHelloJS, then call the corresponding Python function
-sayHelloJS( 'Javascript World!' )
-eel.say_hello_py( 'Javascript World!' )
 
 function App() {
-  //const [count, setCount] = React.useState(0);
+  const [authenticated, setAuthenticated] = useState(-1);
+  const [authenticated2, setAuthenticated2] = useState({'login' : 'true'});
+  const [test, setTest] = useState(1000);
+
+
+  async function btnHandler() {
+    var test = await eel.test('sample.pdf')();
+    // setAuthenticated(test);
+    setTest(test)
+  }
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>TEST</code> and save to reload.
-        </p>
-        <Button variant="contained" onClick={() => eel.pick_file2('C:\\Users\\Duncan\\Favorites')}>Click</Button>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <authContext.Provider value={{ authenticated, setAuthenticated, authenticated2, setAuthenticated2, test, setTest}}>
+      <div className="App">
+        <header className="App-header">
+          <h1>Virus Crawler</h1>
+          <p>{authenticated}</p>
+          <p>{test}</p>
+          <Button variant="contained" onClick={btnHandler}>Click</Button>
+          {/* <Button variant="contained" onClick={() => {console.log(authenticated)}}>Click</Button> */}
+          {/* <Login /> */}
+        </header>
+        <body className='App-header'>
+          
+          <Button variant="contained" component="label">
+            Upload File
+            <input type="file" hidden />
+          </Button>
+        </body>
+      </div>
+    </authContext.Provider>
   );
 }
 

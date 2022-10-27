@@ -4,6 +4,7 @@ import os
 import platform
 import random
 import sys
+import analyzer
 
 import eel
 
@@ -11,14 +12,7 @@ import eel
 sys.path.insert(1, '../../')
 
 
-@eel.expose  # Expose function to JavaScript
-def say_hello_py(x):
-    """Print message from JavaScript on app initialization, then call a JS function."""
-    print('Hello from %s' % x)  # noqa T001
-    eel.say_hello_js('Python {from within say_hello_py()}!')
 
-
-@eel.expose
 def expand_user(folder):
     """Return the full path to display in the UI."""
     return '{}/*'.format(os.path.expanduser(folder))
@@ -37,10 +31,11 @@ def pick_file(folder):
         return '{} is not a valid folder'.format(folder)
     
 @eel.expose
-def pick_file2(folder):
+def pick_file2():
+    # stream = {'login': 'test', 'status': 'read'}
     stream = os.popen('dir')
     output = stream.read()
-    eel.show_log(output)
+    return {'login': output}
 
 
 def start_eel(develop):
@@ -56,10 +51,6 @@ def start_eel(develop):
         page = 'index.html'
 
     eel.init(directory, ['.tsx', '.ts', '.jsx', '.js', '.html'])
-
-    # These will be queued until the first connection is made, but won't be repeated on a page reload
-    say_hello_py('Python World!')
-    eel.say_hello_js('Python World!')   # Call a JavaScript function (must be after `eel.init()`)no
 
     eel_kwargs = dict(
         host='localhost',
