@@ -137,8 +137,10 @@ function App() {
         result = <Box sx={{ width: '100%' }}>
                   <br/> <CircularProgress color="vcDarkPurple" />
                 </Box>
-      } else {
+      } else if (test.result === false){
         result = <div><GoodResult /><span><Button variant="contained" color="vcDarkPurple" onClick={() => {setMoreResults(true);setShowStatus(false);}} size='large'>Show Advanced Results</Button>&nbsp;&nbsp;&nbsp;<Button variant="contained" color="vcDarkPurple" onClick={() => {setShowStatus(false);setAllowUpload(true);setTest(null);}} size='large'>Scan A Different PDF</Button></span></div>
+      } else {
+        result = ''
       }
     }
   // } else {
@@ -188,7 +190,7 @@ function App() {
   let advancedResults;
   
     advancedResults = (<div className='App-body'>
-       {test && <><Tooltip title="test1"><Typography variant='h5'>Signature 1: {test.sig_one ? "Failed" : "Passed"} <br /></Typography></Tooltip><Tooltip title="test1"><Typography variant='h5'>Signature 2: {test.sig_two ? "Failed" : "Passed"} <br /></Typography></Tooltip><Tooltip title="test1"><Typography variant='h5'>Signature 3: {test.sig_three ? "Failed" : "Passed"} <br /></Typography></Tooltip><br /></>}
+       {test && <><Tooltip title="test1"><Typography variant='h5'>Signature 1: {test.sig_one ? "Failed" : "Passed"} <br /></Typography></Tooltip><Tooltip title="test1"><Typography variant='h5'>Signature 2: {test.sig_two ? "Failed" : "Passed"} <br /></Typography></Tooltip><Tooltip title="test1"><Typography variant='h5'>Signature 3: {test.sig_three ? "Failed" : "Passed"} <br /></Typography></Tooltip><br /><Tooltip title="test1"><Typography variant='h5'>Signature 1: {test.sig_four ? "Failed" : "Passed"} <br /></Typography></Tooltip></>}
         <Button variant="contained" color="vcDarkPurple" onClick={() => {setMoreResults(false);setAllowUpload(true);setTest(null);}} size='large'>Scan A Different PDF</Button>
     </div>)
   
