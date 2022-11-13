@@ -1,27 +1,8 @@
 from pikepdf import Pdf
 import os
 import sys
-#import re
-
+import json
 import eel
-
-# Use latest version of Eel from parent directory
-sys.path.insert(1, '../../')
-
-@eel.expose
-def test(file):
-    # stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -a ' + file, 'r')
-    # output = stream.read()
-    # return output
-    pdfid_Stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe ./pdfid/pdfid.py ' + file, 'r')
-    output = pdfid_Stream.read().splitlines()
-    return output[2:-2]
-
-@eel.expose
-def test2(file):
-    stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -a ' + file, 'r')
-    output = stream.read()
-    return output
 
 #Checks to see if there is an argument for a PDF file
 #TO DO: Check if it's an actual PDF file
@@ -31,7 +12,6 @@ def fileCheck():
         exit()
 
 #grabs and returns the number of pages in the PDF as a list
-@eel.expose
 def pageCount(pdf):
     pages = []
     for pageNum in range(len(pdf.pages)):
@@ -40,7 +20,7 @@ def pageCount(pdf):
 
 #pdfid CLI tool to get info for signatures
 def pdfid(fileName):
-    pdfid_Stream = os.popen('python ./pdfid/pdfid.py ' + fileName, 'r')
+    pdfid_Stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe ./pdfid/pdfid.py ' + fileName, 'r')
     output = pdfid_Stream.read().splitlines()
     return output[2:-2]
 
@@ -50,7 +30,7 @@ class pdf_parser():
 
     # display stats for pdf document
     def stats(self, fileName):
-        stream = os.popen('python pdf-parser.py -a ' + fileName, 'r')
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -a ' + fileName, 'r')
         output = stream.read()
         print(output)
 
@@ -58,16 +38,104 @@ class pdf_parser():
     # searches for string 'Encoding'
     # Returns: prints the entire object where the string was found
     def encoding(self, fileName):
-        stream = os.popen('python pdf-parser.py --search=Encoding ' + fileName, 'r')       
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exevvv pdf-parser.py --search=Encoding ' + fileName, 'r')       
         output = stream.read()
         print(output)
 
-    
+    def jsSearch(self, fileName):
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s /JavaScript ' + fileName, 'r')    
+        output = stream.read().splitlines()
+        for line in output:
+            if "obj" in line:
+                return line
+
+        return 0
+
+    def flateDecodeSearch(self, fileName, objNum):
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o ' + objNum + ' ' + fileName)
+        output = stream.read().splitlines()
+        for line in output:
+            if "/FlateDecode" in line:
+                return True
+
+        return False            
+
 #the class that holds all of the signature detection functions
 class signatures():
     
+    # Finds obfuscated JS code and then deobfuscates it by calling spider-monkey (/js)
+    # Deobfuscated JS STILL NEEDS TO BE PARSED FOR IDENTIFIERS which would satisfy signatures #6-9.
+    def deobfuscateJS(self, fileName):
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s javascript ' + fileName, 'r')
+        output = stream.read()
+        stream.close()
+
+        output = (output.split('obj')) # put each object into its own list
+        output = ' '.join(output)
+        output = output.split(' ')  # separate each list into smaller lists
+
+        # Remove the warning message
+        #check_string = 'This program has not been tested with this version of Python'
+        #result = any(check_string in sub for sub in output)
+
+        #if result == True:
+        #    output = deque(output)
+        #    output.popleft()
+        #    output = list(output) # Even though output is a list, it outputs like a normal string not a list
+
+
+        #newStr = ''.join(output) #Re-construct the normal looking output.
+        #newStr = newStr.split(' ')  #Parse the normal looking output.
+
+        #Find the position of the object reference of the /JS identifier 
+        objectIndex = output.index('/JS')
+        objectIndex = output[objectIndex+1]
+        print (objectIndex)
+        #objectIndex = newStr.index('/JS') #Find the position of the string /JS.
+        #objectIndex = newStr[objectIndex+1] #Find the object number /JS is referencing.
+
+        objectIndex = str(objectIndex)  #Turn the object number into a string.
+        runCmd = f'C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o {objectIndex} {fileName}' #Create the command that will be ran.
+
+        #Run the command
+        runCmd = os.popen(runCmd, 'r')
+        stream = runCmd.read()
+        runCmd.close()
+        #print (stream)
+
+
+        #Search this new output for any encodings.
+        newStr = stream.split(' ')  #Parse the normal looking output.
+
+        # If /Filter exists then run the decode option
+        if newStr.index('/Filter') != False:
+            runCmd = f'C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o {objectIndex} -f {fileName}'
+            runCmd = os.popen(runCmd, 'r') 
+            stream = runCmd.read()
+            print (stream)
+
+        ##
+        ## Still need to code to parse for identifiers.
+        ##
+
+        retcode = os.popen(f'C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o {objectIndex} -f -d test.js {fileName}') 
+        stream = retcode.read() #os.popen will error if the stream is not read().
+        retcode.close()
+        # Don't add 'r', or 'w' in os.popen if we don't intend to do anything with the stream.
+        # A.k.a in situations where we only want to call the command to open a file.
+        # Adding 'r' or 'w' in this situation breaks the pipe for some reason.
+        spiderMonkey = str('./js')    # Path to where spidermonkey program is located. 
+        retcode = os.popen(f'{spiderMonkey} test.js')
+        #stream = retcode.read()
+
+        # Look at the deobfuscated javascript.
+        # Spidermonkey will always output to a file called eval.001.log.
+        deobfuscatedJs = open('eval.001.log', 'r')
+        print(deobfuscatedJs.read())
+        deobfuscatedJs.close()
+    
     # checks to see if signature one or two is present
-    def one_and_two(self, fileName, pdf):
+    def sig_one_and_two(self, fileName, pdf):
         output = pdfid(fileName)
 
         jsFlag = 0
@@ -80,47 +148,93 @@ class signatures():
             #print(output[i])
             if "JavaScript" in output[i]:
                 if(output[i][-1] != "0"):
+                    #immediatly returns for signature 2 is obfuscation is found
                     if(output[i][-1] == ")"):
                         jsObfuscatedFlag = 1
-                        print("Javascript found in file with " + output[i][-2] + " obfuscated instance(s) and " + output[i][-4] + " non-obfuscated instance(s)")
                         return 2
-                    print("Javascript found in file with " + output[i][-1] + " instance(s)")
                     jsFlag = 1
+
             elif "/AA" in output[i]:
                 if(output[i][-1] != "0"):
                     aaFlag = 1
-                    print("Automatic actions found in file with " + output[i][-1] + " instance(s)")
+
             elif "/OpenAction" in output[i]:
                 if(output[i][-1] != "0"):
                     oaFlag = 1
-                    print("Open actions found in file with " + output[i][-1] + " instance(s)")        
+
             elif "/AcroForm" in output[i]:
                 if(output[i][-1] != "0"):
                     acroFlag = 1
-                    print("Acro forms found in file with " + output[i][-1] + " instance(s)")
 
+        #final check for signature 1
         if jsFlag == 1 or jsObfuscatedFlag == 1:
             if aaFlag == 1 or oaFlag == 1 or acroFlag == 1:
                 if len(pageCount(pdf)) == 1:
-                    print("Only one page in the PDF document")
                     return 1
         return 0
 
-def Main():
-    fileCheck()
-    pdf = Pdf.open(sys.argv[1])
+    def sig_three(self, fileName):
+        cmd = pdf_parser()
+
+        if cmd.jsSearch(fileName) != 0:
+            obj = cmd.jsSearch(fileName)
+        else:
+            return 0
+
+        objNum = ''
+
+        for i in range(4, len(obj)):
+            if obj[i].isnumeric():
+                objNum += obj[i]
+
+            if not obj[i].isnumeric():
+                break
+
+        if cmd.flateDecodeSearch(fileName, objNum):
+            return True
+
+        return False                
+
+@eel.expose
+def doWork(fileName):
+    # fileCheck()
+    for r,d,f in os.walk("c:\\"):
+        for files in f:
+            if files == fileName:
+                fileName = os.path.join(r,files)
+                
+    pdf = Pdf.open(fileName)
     pages = pageCount(pdf)
 
-    file = (sys.argv[1])
+    file = (fileName)
 
     cmd = pdf_parser()
     signature = signatures()
 
+    jsonResult = {"result": None, "sig_one": False, "sig_two": False, "sig_three": False}
+
     #cmd.stats(file)
     #cmd.encoding(file)
-    if signature.one_and_two(file, pdf) == 1:
-        print("WARNING, MALWARE LIKELY EMBEDDED")
-    elif signature.one_and_two(file, pdf) == 2:
-        print("WARNING, OBFUSCATED JAVASCRIPT DETECTED") 
+    if signature.sig_one_and_two(file, pdf) == 1:
+        print("WARNING, SIGNATURE 1 TRIGGERED")
+        jsonResult["result"] = True
+        jsonResult["sig_one"] = True
+    elif signature.sig_one_and_two(file, pdf) == 2:
+        print("WARNING, SIGNATURE 2 TRIGGERED") 
+        jsonResult["result"] = True
+        jsonResult["sig_two"] = True
+    elif signature.sig_three(file):
+        print('WARNING, SIGNATURE 3 TRIGGERED')
+        jsonResult["result"] = True
+        jsonResult["sig_three"] = True
+    else:
+        print('The PDF file is safe to open')
+        jsonResult["result"] = False
 
-# Main()
+    return json.dumps(jsonResult)
+
+def main():
+    doWork()
+
+if __name__ == "__main__":
+    main()
