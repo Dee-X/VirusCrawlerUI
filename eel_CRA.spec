@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import copy_metadata
 
-datas = [('C:\\Users\\Duncan\\AppData\\Local\\Programs\\Python\\Python310\\lib\\site-packages\\eel\\eel.js', 'eel'), ('build', 'build'), ('analyzer.py', '.'), ('pdf-parser.py', '.'), ('pdfid\\pdfid.py', '.')]
+datas = [('C:\\Users\\Duncan\\AppData\\Local\\Programs\\Python\\Python310\\lib\\site-packages\\eel\\eel.js', 'eel'), ('build', 'build'), ('pdf-parser.py', '.'), ('pdfid/pdfid.py', ','), ('analyzer.py', '.')]
 datas += copy_metadata('pikepdf')
 
 
@@ -39,7 +39,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

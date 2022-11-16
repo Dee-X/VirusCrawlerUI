@@ -58,7 +58,7 @@ function GoodResult() {
 function BadResult() {
   return(
     <div>
-      <b>NOT</b> SAFE
+      <b className='title-text'>NOT</b> SAFE
     </div>
   );
 }
@@ -70,7 +70,7 @@ function App() {
   const [allowUpload, setAllowUpload] = useState(false);
   const [moreResults, setMoreResults] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
-  const [header, ] = useState(true);
+  const [header, setHeader] = useState(false);
   const classes = styles();
 
   const transition = useTransition(authenticated2, {
@@ -114,10 +114,11 @@ function App() {
     setAllowUpload(false);
     setShowStatus(true);
     setTest({'processing' : true})
-    var test = await eel.doWork(authenticated.name)();
+    var test = await eel.doWork(authenticated.name)().then();
     // setAuthenticated(test);
-    setTest(test);
-    console.log(test);
+    var temp = JSON.parse(test);
+    setTest(temp);
+    console.log(temp.result);
   }
 
   const fileOnChange = (event) => {
@@ -131,16 +132,15 @@ function App() {
   // if (showStatus) {
   //     console.log(test);
     if (test){
-      if (test.result === true){
+      console.log(test);
+      if (test.result === 1){
         result = (<div><BadResult /> <span><Button variant="contained" color="vcDarkPurple" onClick={() => {setMoreResults(true);setShowStatus(false);}} size='large'>Show Advanced Results</Button>&nbsp;&nbsp;&nbsp;<Button variant="contained" color="vcDarkPurple" onClick={() => {setShowStatus(false);setAllowUpload(true);setTest(null);}} size='large'>Scan A Different PDF</Button></span></div>)
       } else if (test.processing) {
         result = <Box sx={{ width: '100%' }}>
                   <br/> <CircularProgress color="vcDarkPurple" />
                 </Box>
-      } else if (test.result === false){
-        result = <div><GoodResult /><span><Button variant="contained" color="vcDarkPurple" onClick={() => {setMoreResults(true);setShowStatus(false);}} size='large'>Show Advanced Results</Button>&nbsp;&nbsp;&nbsp;<Button variant="contained" color="vcDarkPurple" onClick={() => {setShowStatus(false);setAllowUpload(true);setTest(null);}} size='large'>Scan A Different PDF</Button></span></div>
       } else {
-        result = ''
+        result = <div><GoodResult /><span><Button variant="contained" color="vcDarkPurple" onClick={() => {setShowStatus(false);setAllowUpload(true);setTest(null);}} size='large'>Scan A Different PDF</Button></span></div>
       }
     }
   // } else {
@@ -150,7 +150,8 @@ function App() {
   let start;
   // if (authenticated2) {
     start = (<div className='App-body'>
-              <Button variant="contained" color="vcDarkPurple" onClick={() => {setAuthenticated2(false); setAllowUpload(true);}} size='large'>Begin</Button>
+              <Typography variant='h2'>Welcome to <Typography variant='h1' className='title-text'>Virus Crawler</Typography><br />Press begin to continue</Typography> <br/><br /><br/>
+              <Button variant="contained" color="vcDarkPurple" onClick={() => {setAuthenticated2(false); setAllowUpload(true); setHeader(true)}} size='large'>Begin</Button>
             </div>);
   // } else {
   //   start = null;
@@ -159,6 +160,7 @@ function App() {
   let fileUpload;
   // if (allowUpload) {
     fileUpload = (<div className='App-body'>
+      <Typography variant='h2'>Press upload a PDF file below</Typography> <br/><br /><br/>
     <span>
       <TextField type='file' name='testFile' style={{
         borderRadius: 25,
@@ -190,7 +192,20 @@ function App() {
   let advancedResults;
   
     advancedResults = (<div className='App-body'>
-       {test && <><Tooltip title="test1"><Typography variant='h5'>Signature 1: {test.sig_one ? "Failed" : "Passed"} <br /></Typography></Tooltip><Tooltip title="test1"><Typography variant='h5'>Signature 2: {test.sig_two ? "Failed" : "Passed"} <br /></Typography></Tooltip><Tooltip title="test1"><Typography variant='h5'>Signature 3: {test.sig_three ? "Failed" : "Passed"} <br /></Typography></Tooltip><br /><Tooltip title="test1"><Typography variant='h5'>Signature 1: {test.sig_four ? "Failed" : "Passed"} <br /></Typography></Tooltip></>}
+       {test && <><Tooltip title="If the file has BOTH javascript code and automatic actions
+                (such as an automatic action upon opening the file)" placement="left">
+                  <Typography variant='h5'>Signature 1: {test.sig_one ? "Failed" : "Passed"} <br /></Typography></Tooltip>
+                  <Tooltip title="If the identifiers in the PDF have been obfuscated. For example, if the pdf
+has javascript in it, the '/JavaScript' identifier may be obfuscated to attempt hide the fact
+there actually is embedded JavaScript. Example: obfuscated /JavaScript tag can look like:
+/J#61v#61Script to thwart detection." placement="left"><Typography variant='h5'>Signature 2: {test.sig_two ? "Failed" : "Passed"} <br /></Typography></Tooltip>
+                  <Tooltip title="If the JavaScript code itself has been encoded. Just having JavaScript is not
+indicitive of malware, but if it's been encoded with an algorithm (such as FlateDecode),
+this signature wil flag the file. JavaScript is not normally encoded.1" placement="left"><Typography variant='h5'>Signature 3: {test.sig_three ? "Failed" : "Passed"} <br /></Typography></Tooltip>
+                  <Tooltip title="If there is an object stream inside another object stream, and the nested one
+has JavaScript. An object stream is just a sequence of bytes that contains information
+about an object, such as the length (in bytes), the filter, and where it's located in 
+the document." placement="left"><Typography variant='h5'>Signature 4: {test.sig_four ? "Failed" : "Passed"} <br /></Typography></Tooltip><br/></>}
         <Button variant="contained" color="vcDarkPurple" onClick={() => {setMoreResults(false);setAllowUpload(true);setTest(null);}} size='large'>Scan A Different PDF</Button>
     </div>)
   

@@ -47,3 +47,21 @@ span {
   display: inline-flex;
   align-items: center;
 }
+
+.title-text {
+  background-color: red;
+  
+  /* Create the gradient. */
+  background-image: linear-gradient(to bottom right, #A26CF4, #7941FB, #442f65);
+  
+  /* Set the background size and repeat properties. */
+  background-size: 100%;
+  background-repeat: repeat;
+
+  /* Use the text as a mask for the background. */
+  /* This will show the gradient as a text color rather than element bg. */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; 
+  -moz-background-clip: text;
+  -moz-text-fill-color: transparent;
+}

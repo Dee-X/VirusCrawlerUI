@@ -22,7 +22,7 @@ def pageCount(pdf):
 
 #pdfid CLI tool to get info for signatures
 def pdfid(fileName):
-    pdfid_Stream = os.popen('python ./pdfid/pdfid.py ' + fileName, 'r')
+    pdfid_Stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe ./pdfid/pdfid.py ' + fileName, 'r')
     output = pdfid_Stream.read().splitlines()
     return output[2:-2]
 
@@ -40,7 +40,7 @@ class pdf_parser():
 
     # display stats for pdf document
     def stats(self, fileName):
-        stream = os.popen('python pdf-parser.py -a ' + fileName, 'r')
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -a ' + fileName, 'r')
         output = stream.read()
         print(output)
 
@@ -48,12 +48,12 @@ class pdf_parser():
     # searches for string 'Encoding'
     # Returns: prints the entire object where the string was found
     def encoding(self, fileName):
-        stream = os.popen('python pdf-parser.py --search=Encoding ' + fileName, 'r')       
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py --search=Encoding ' + fileName, 'r')       
         output = stream.read()
         print(output)
 
     def jsSearch(self, fileName):
-        stream = os.popen('python pdf-parser.py -s /JavaScript ' + fileName, 'r')    
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s /JavaScript ' + fileName, 'r')    
         output = stream.read().splitlines()
         stream.close()
 
@@ -65,7 +65,7 @@ class pdf_parser():
 
     def getObjs(self, fileName):
         
-        stream = os.popen('python pdf-parser.py -s /JavaScript ' + fileName, 'r')    
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s /JavaScript ' + fileName, 'r')    
         output = stream.read().splitlines()
         stream.close()
 
@@ -79,14 +79,14 @@ class pdf_parser():
 
     def jumpToObj(self, fileName, objNum):
 
-        stream = os.popen('python pdf-parser.py -o ' + objNum + ' ' + fileName)
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o ' + objNum + ' ' + fileName)
         output = stream.read().splitlines()
         stream.close()
 
         return output
 
     def flateDecodeSearch(self, fileName, objNum):
-        stream = os.popen('python pdf-parser.py -o ' + objNum + ' ' + fileName)
+        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o ' + objNum + ' ' + fileName)
         output = stream.read().splitlines()
         for line in output:
             if "/FlateDecode" in line:
@@ -250,7 +250,7 @@ class signatures():
         for i in range(0, len(output)):
             if "ObjStm" in output[i]:
                 if(output[i][-1] != "0"):
-                    stream = os.popen(f'python pdf-parser.py -s /ObjStm -f {fileName} | ./pdfid/pdfid.py --force')
+                    stream = os.popen(f'C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s /ObjStm -f {fileName} | ./pdfid/pdfid.py --force')
                     output = stream.read().splitlines()
                     stream.close()
 
@@ -406,6 +406,8 @@ def doWork(fileName):
             if files == fileName:
                 fileName = os.path.join(r,files)
                 
+    eel.show_log(fileName)
+                
     pdf = Pdf.open(fileName)
     pages = pageCount(pdf)
 
@@ -416,32 +418,32 @@ def doWork(fileName):
     flag = 0
     #cmd.createDeobfuscatedFiles(file)
 
-    jsonResult = {"result": None, "sig_one": False, "sig_two": False, "sig_three": False, "sig_four": False}
+    jsonResult = {"result": 0, "sig_one": 0, "sig_two": 0, "sig_three": 0, "sig_four": 0}
 
     #cmd.stats(file)
     #cmd.encoding(file)
     if signature.sig_one_and_two(file, pdf) == 1:
         #print("WARNING, SIGNATURE 1 TRIGGERED")
-        jsonResult["result"] = True
-        jsonResult["sig_one"] = True
+        jsonResult["result"] = 1
+        jsonResult["sig_one"] = 1
         flag = 1
     if signature.sig_one_and_two(file, pdf) == 2:
         #print("WARNING, SIGNATURE 2 TRIGGERED") 
-        jsonResult["result"] = True
-        jsonResult["sig_two"] = True
+        jsonResult["result"] = 1
+        jsonResult["sig_two"] = 1
         flag = 1
     if signature.sig_three(file):
         #print('WARNING, SIGNATURE 3 TRIGGERED')
-        jsonResult["result"] = True
-        jsonResult["sig_three"] = True
+        jsonResult["result"] = 1
+        jsonResult["sig_three"] = 1
         flag = 1
     if signature.sig_four(file):
-        jsonResult["result"] = True
-        jsonResult["sig_four"] = True  
+        jsonResult["result"] = 1
+        jsonResult["sig_four"] = 1  
         flag = 1       
 
     if flag == 0:
-        jsonResult["result"] = False
+        jsonResult["result"] = 0
 
     #removeFiles()
     return json.dumps(jsonResult)
