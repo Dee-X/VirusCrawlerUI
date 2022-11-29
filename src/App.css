@@ -65,3 +65,7 @@ span {
   -moz-background-clip: text;
   -moz-text-fill-color: transparent;
 }
+
+.path-field{
+  margin: 5rem;
+}

@@ -71,6 +71,7 @@ function App() {
   const [moreResults, setMoreResults] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
   const [header, setHeader] = useState(false);
+  const [path, setPath] = useState('python')
   const classes = styles();
 
   const transition = useTransition(authenticated2, {
@@ -114,7 +115,7 @@ function App() {
     setAllowUpload(false);
     setShowStatus(true);
     setTest({'processing' : true})
-    var test = await eel.doWork(authenticated.name)().then();
+    var test = await eel.doWork(authenticated.name, path)().then();
     // setAuthenticated(test);
     var temp = JSON.parse(test);
     setTest(temp);
@@ -126,6 +127,10 @@ function App() {
     const [file] = files;
     setAuthenticated(file);
     console.log(file);
+  }
+
+  const pathOnChange = (event) => {
+    setPath(event.target.value)
   }
 
   let result;
@@ -174,7 +179,13 @@ function App() {
       }} onChange={fileOnChange}/>
       &nbsp;&nbsp;&nbsp;
       <Button variant="contained" color="vcDarkPurple" onClick={btnHandler} disabled={!authenticated} size='large'>Scan</Button>
-    </span>   
+    </span> 
+    <div className='path-field'>
+      <TextField id="outlined-basic" label="Python Path (if not applicable, type python)" variant='outlined' onChange={pathOnChange} style={{
+          borderRadius: 25,
+          backgroundColor: '#F5F5F5'
+        }}/>
+    </div> 
   </div>);
   // } else {
   //   fileUpload = null;

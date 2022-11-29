@@ -6,11 +6,16 @@ import shlex
 import json
 import eel
 
+pdfIdPath = "pdfid/pdfid.py"
+# pdfIdPath = os.path.join(sys._MEIPASS, "pdfid.py")
+pdfParserPath = "pdf-parser.py"
+# pdfParserPath = os.path.join(sys._MEIPASS, "pdf-parser.py")
+
 #Checks to see if there is an argument for a PDF file
 #TO DO: Check if it's an actual PDF file
 def fileCheck():
     if len(sys.argv) < 2:
-        print('Error, please provide a PDF file.')
+        # print('Error, please provide a PDF file.')
         exit()
 
 #grabs and returns the number of pages in the PDF as a list
@@ -22,8 +27,11 @@ def pageCount(pdf):
 
 #pdfid CLI tool to get info for signatures
 def pdfid(fileName):
-    pdfid_Stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe ./pdfid/pdfid.py ' + fileName, 'r')
+    # print(pythonPath + ' '+ pdfIdPath + ' ' + fileName)
+    pdfid_Stream = os.popen(pythonPath + ' '+ pdfIdPath + ' ' + fileName, 'r')
+    # pdfid_Stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe ./pdfid/pdfid.py ' + fileName, 'r')
     output = pdfid_Stream.read().splitlines()
+    # print(output)
     return output[2:-2]
 
 '''def removeFiles():
@@ -40,23 +48,23 @@ class pdf_parser():
 
     # display stats for pdf document
     def stats(self, fileName):
-        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -a ' + fileName, 'r')
+        stream = os.popen(pythonPath + ' '+ pdfParserPath + ' -a ' + fileName, 'r')
         output = stream.read()
-        print(output)
+        # print(output)
 
     # string to search in indirect objects (except streams)
     # searches for string 'Encoding'
     # Returns: prints the entire object where the string was found
     def encoding(self, fileName):
-        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py --search=Encoding ' + fileName, 'r')       
+        stream = os.popen(pythonPath + ' '+ pdfParserPath + ' --search=Encoding ' + fileName, 'r')       
         output = stream.read()
-        print(output)
+        # print(output)
 
     def jsSearch(self, fileName):
-        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s /JavaScript ' + fileName, 'r')    
+        stream = os.popen(pythonPath + ' '+ pdfParserPath + ' -s /JavaScript ' + fileName, 'r')    
         output = stream.read().splitlines()
         stream.close()
-
+        # print(output)
         for line in output:
             if "obj" in line:
                 return line
@@ -65,10 +73,10 @@ class pdf_parser():
 
     def getObjs(self, fileName):
         
-        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s /JavaScript ' + fileName, 'r')    
+        stream = os.popen(pythonPath + ' '+ pdfParserPath + ' -s /JavaScript ' + fileName, 'r')    
         output = stream.read().splitlines()
         stream.close()
-
+        # print(output)
         myList = []
 
         for line in output:
@@ -79,15 +87,16 @@ class pdf_parser():
 
     def jumpToObj(self, fileName, objNum):
 
-        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o ' + objNum + ' ' + fileName)
+        stream = os.popen(pythonPath + ' '+ pdfParserPath + ' -o ' + objNum + ' ' + fileName)
         output = stream.read().splitlines()
         stream.close()
-
+        # print(output)
         return output
 
     def flateDecodeSearch(self, fileName, objNum):
-        stream = os.popen('C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -o ' + objNum + ' ' + fileName)
+        stream = os.popen(pythonPath + ' '+ pdfParserPath + ' -o ' + objNum + ' ' + fileName)
         output = stream.read().splitlines()
+        # print(output)
         for line in output:
             if "/FlateDecode" in line:
                 return True
@@ -156,7 +165,7 @@ class signatures():
     # checks to see if signature one or two is present
     def sig_one_and_two(self, fileName, pdf):
         output = pdfid(fileName)
-
+        # print(output)
         jsFlag = 0
         jsObfuscatedFlag = 0
         aaFlag = 0
@@ -193,7 +202,7 @@ class signatures():
 
     def sig_three(self, fileName):
         cmd = pdf_parser()
-
+        # print(cmd)
         if cmd.jsSearch(fileName) != 0:
             obj = cmd.jsSearch(fileName)
         else:
@@ -219,6 +228,7 @@ class signatures():
         parser = pdf_parser()
         flag = False
         output = parser.getObjs(fileName)
+        # print(output)
 
         try:
             # Find the obj reference #
@@ -244,13 +254,14 @@ class signatures():
         jsFlag = 0
 
         output = pdfid(fileName)
+        # print(output)
 
         #Check PDFID output for signs of /ObjStm
         #If found, un-embed it.
         for i in range(0, len(output)):
             if "ObjStm" in output[i]:
                 if(output[i][-1] != "0"):
-                    stream = os.popen(f'C:/Users/Duncan/AppData/Local/Programs/Python/Python310/python.exe pdf-parser.py -s /ObjStm -f {fileName} | ./pdfid/pdfid.py --force')
+                    stream = os.popen(pythonPath + ' '+ pdfParserPath + ' -s /ObjStm -f {fileName} | ./pdfid/pdfid.py --force')
                     output = stream.read().splitlines()
                     stream.close()
 
@@ -279,6 +290,7 @@ class signatures():
         stream = os.popen('cat eval.001.log')
         output = stream.read()
         stream.close()
+        # print(output)
 
         index = 1
 
@@ -304,6 +316,7 @@ class signatures():
         stream = os.popen('cat eval.001.log')
         output = stream.read()
         stream.close()
+        # print(output)
 
         index = 1
 
@@ -325,6 +338,7 @@ class signatures():
         return flag
 
     def sig_seven(self):
+        # print(output)
         
         stream = os.popen('cat eval.001.log')
         output = stream.read()
@@ -351,6 +365,7 @@ class signatures():
 
     def sig_eight(self):
         
+        # print(output)
         stream = os.popen('cat eval.001.log')
         output = stream.read()
         stream.close()
@@ -381,6 +396,7 @@ class signatures():
         stream.close()
 
         index = 1
+        # print(output)
 
         flag = False
         
@@ -400,7 +416,15 @@ class signatures():
         return flag
     
 @eel.expose
-def doWork(fileName):
+def doWork(fileName, pathName):
+    global pythonPath
+    
+    
+    if pathName is None:
+        pythonPath = 'python'
+    else:
+        pythonPath = pathName
+    
     for r,d,f in os.walk("c:\\"):
         for files in f:
             if files == fileName:
